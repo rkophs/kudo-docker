@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  kudu-master:
+    build: .
+    image: rkophs/kudu
+    command: master
+    ports:
+     - 7051:7051
+     - 8051:8051
+    networks:
+      - kudu-net
+  kudu-tserver:
+    build: .
+    image: rkophs/kudu
+    environment:
+      - KUDU_MASTER=kudu-master
+    command: tserver
+    ports:
+     - 7050:7050
+     - 8050:8050
+    networks:
+      - kudu-net
+
+networks:
+  kudu-net:
+    driver: overlay
