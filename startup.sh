@@ -16,36 +16,40 @@ function do_help {
   exit 0
 }
 
-echo "Welcome... Starting up...."
+function log {
+  echo `date`": $@" 
+}
 
-PERSIST="/data"
+PERSIST="/data/kudu"
 DATA_DIR="${PERSIST}/blocks"
 LOG_DIR="${PERSIST}/logs"
 WRITE_AHEAD="${PERSIST}/wal"
 
-mkdir -p $DATA_DIR
-mkdir -p $LOG_DIR
-mkdir -p $WRITE_AHEAD
+mkdir -m 700 -p $PERSIST
+mkdir -m 700 -p $DATA_DIR
+mkdir -m 700 -p $LOG_DIR
+mkdir -m 700 -p $WRITE_AHEAD
 
-DEFAULT_KUDU_OPTS="-logtostderr \
- -fs_wal_dir=${WRITE_AHEAD} \
+log "Welcome. Starting up with arguments: [$@]" >> ${LOG_DIR}/startup_history.log
+
+DEFAULT_KUDU_OPTS="-fs_wal_dir=${WRITE_AHEAD} \
  -fs_data_dirs=${DATA_DIR} \
  -log_dir=${LOG_DIR}
  -use_hybrid_clock=false"
 
 KUDU_OPTS=${KUDU_OPTS:-${DEFAULT_KUDU_OPTS}}
 
-echo "KUDU_OPTS: " $KUDU_OPTS
+log "KUDU_OPTS: " $KUDU_OPTS
 
 if [ "$1" = 'master' ]; then
-  echo "Running Master "
+  log "Running Master"
 	exec kudu-master $KUDU_OPTS
 elif [ "$1" = 'tserver' ]; then
-  echo "Running server "
+  log "Running server"
   exec kudu-tserver -tserver_master_addrs $KUDU_MASTER $KUDU_OPTS
 elif [ "$1" = 'cli' ]; then
-  echo "Running shell "
   shift; # Remove first arg and pass remainder to kudu cli
+  log "Running shell with ops: $@"
   exec kudu-ts-cli -server_address=${KUDU_TSERVER} ${KUDU_OPTS} "$@"
 elif [ "$1" = 'help' ]; then
   do_help
