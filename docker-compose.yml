@@ -10,6 +10,8 @@ services:
      - 8051:8051
     networks:
       - kudu-net
+    volumes:
+      - kudu-master-data:/data
   kudu-tserver:
     build: .
     image: rkophs/kudu
@@ -21,7 +23,13 @@ services:
      - 8050:8050
     networks:
       - kudu-net
+    volumes:
+      - kudu-tserver-data:/data
 
 networks:
   kudu-net:
     driver: overlay
+
+volumes:
+  kudu-master-data:
+  kudu-tserver-data:
